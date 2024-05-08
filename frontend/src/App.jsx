@@ -4,11 +4,15 @@ import { Button, Rating, Spinner } from 'flowbite-react';
 const App = props => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [genres, setGenres] = useState([]);
 
+  // Aggiungi uno stato per il genere selezionato
+  const [selectedGenre, setSelectedGenre] = useState('');
 
   // Aggiungi uno stato per il criterio di ordinamento selezionato
   const [orderBy, setOrderBy] = useState(''); // Inizialmente nessun criterio selezionato
 
+  // Funzione per recuperare i film dal server 
   const fetchMovies = () => {
     setLoading(true);
 
@@ -23,14 +27,43 @@ const App = props => {
       });
   }
 
+  // Funzione per recuperare i generi dal server
+  const fetchGenres = () => {
+    fetch('http://localhost:8000/genres')
+      .then(response => response.json())
+      .then(data => {
+        setGenres(data);
+      })
+      .catch(error => {
+        console.error('Error fetching genres:', error);
+      });
+  }
+
+
+  // Effetto per caricare i film e i generi quando cambia il criterio di ordinamento
   useEffect(() => {
     fetchMovies();
-  }, [orderBy]); // Aggiorna i film quando cambia il criterio di ordinamento
+    fetchGenres();
+  }, [orderBy]);
 
   // Aggiungi la logica per gestire il cambio del criterio di ordinamento
   const handleOrderByChange = (e) => {
     setOrderBy(e.target.value);
   };
+
+  // Gestisce il cambio del genere selezionato
+  const handleGenreChange = (e) => {
+    setSelectedGenre(e.target.value);
+  }
+
+  // Filtra i film in base al genere selezionato
+  const filteredMovies = movies.filter(movie => {
+    if (!selectedGenre) {
+      return true; // Mostra tutti i film se nessun genere è selezionato
+    }
+    return movie.genres.some(genre => genre.id === selectedGenre);
+  });
+
 
   return (
     <Layout>
@@ -39,14 +72,26 @@ const App = props => {
       {/* Aggiungi il dropdown per selezionare il criterio di ordinamento */}
       <div className="flex justify-end mb-4">
 
-        <select id="orderBy" value={orderBy} onChange={handleOrderByChange}>
+        <select id="orderBy" className='me-3' value={orderBy} onChange={handleOrderByChange}>
 
           <option className='dropdown-item' value="">Order By</option>
           <option className='dropdown-item' value="recent">Year</option>
           <option className='dropdown-item' value="rating">Rating</option>
         </select>
 
+
+        {/* Dropdown per selezionare il genere */}
+        <div>
+
+          <select value={selectedGenre} onChange={handleGenreChange}>
+            <option value="">All Genres</option>
+            {genres.map(genre => (
+              <option key={genre.id} value={genre.id}>{genre.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
+
 
       <MovieList loading={loading}>
         {movies.map((item, key) => (
