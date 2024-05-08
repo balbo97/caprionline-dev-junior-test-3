@@ -5,10 +5,17 @@ const App = props => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
+  // Aggiungi uno stato per il criterio di ordinamento selezionato
+  const [orderBy, setOrderBy] = useState(''); // Inizialmente nessun criterio selezionato
+
   const fetchMovies = () => {
     setLoading(true);
 
-    return fetch('http://localhost:8000/movies')
+    // Aggiungi il parametro di ordinamento alla URL della richiesta
+    const url = `http://localhost:8000/movies${orderBy ? `?orderBy=${orderBy}` : ''}`;
+
+    return fetch(url) // Utilizza l'URL con il parametro di ordinamento
       .then(response => response.json())
       .then(data => {
         setMovies(data);
@@ -18,11 +25,28 @@ const App = props => {
 
   useEffect(() => {
     fetchMovies();
-  }, []);
+  }, [orderBy]); // Aggiorna i film quando cambia il criterio di ordinamento
+
+  // Aggiungi la logica per gestire il cambio del criterio di ordinamento
+  const handleOrderByChange = (e) => {
+    setOrderBy(e.target.value);
+  };
 
   return (
     <Layout>
       <Heading />
+
+      {/* Aggiungi il dropdown per selezionare il criterio di ordinamento */}
+      <div className="flex justify-end mb-4">
+
+        <select id="orderBy" value={orderBy} onChange={handleOrderByChange}>
+
+          <option className='dropdown-item' value="">Order By</option>
+          <option className='dropdown-item' value="recent">Year</option>
+          <option className='dropdown-item' value="rating">Rating</option>
+        </select>
+
+      </div>
 
       <MovieList loading={loading}>
         {movies.map((item, key) => (
@@ -89,19 +113,19 @@ const MovieItem = props => {
         <div className="grow mb-3 last:mb-0">
           {props.year || props.rating
             ? <div className="flex justify-between align-middle text-gray-900 text-xs font-medium mb-2">
-                <span>{props.year}</span>
+              <span>{props.year}</span>
 
-                {props.rating
-                  ? <Rating>
-                      <Rating.Star />
+              {props.rating
+                ? <Rating>
+                  <Rating.Star />
 
-                      <span className="ml-0.5">
-                        {props.rating}
-                      </span>
-                    </Rating>
-                  : null
-                }
-              </div>
+                  <span className="ml-0.5">
+                    {props.rating}
+                  </span>
+                </Rating>
+                : null
+              }
+            </div>
             : null
           }
 
@@ -116,13 +140,13 @@ const MovieItem = props => {
 
         {props.wikipediaUrl
           ? <Button
-              color="light"
-              size="xs"
-              className="w-full"
-              onClick={() => window.open(props.wikipediaUrl, '_blank')}
-            >
-              More
-            </Button>
+            color="light"
+            size="xs"
+            className="w-full"
+            onClick={() => window.open(props.wikipediaUrl, '_blank')}
+          >
+            More
+          </Button>
           : null
         }
       </div>
