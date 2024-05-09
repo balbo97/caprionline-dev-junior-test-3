@@ -23,15 +23,23 @@ class MoviesController extends AbstractController
         // Recupero il criterio di ordinamento dalla query 
         $orderBy = $request->query->get('orderBy');
 
-        // Recupero i film dal repository
-        $movies = $this->movieRepository->findAll();
+        // Recupero il genere dalla query
+        $genre = $request->query->get('genre');
 
-        // Se è specificato un criterio di ordinamento, ordino i film di conseguenza
-        if ($orderBy === 'recent') {
-            $movies = $this->movieRepository->findBy([], ['year' => 'DESC']);
-        } elseif ($orderBy === 'rating') {
-            $movies = $this->movieRepository->findBy([], ['rating' => 'DESC']);
+        if ($genre) {
+            $movies = $this->movieRepository->findMoviesByGenre($genre);
+        } else {
+            // Altrimenti, recupero tutti i film
+            $movies = $this->movieRepository->findAll();
+
+            // Se è specificato un criterio di ordinamento, ordino i film di conseguenza
+            if ($orderBy === 'recent') {
+                $movies = $this->movieRepository->findBy([], ['year' => 'DESC']);
+            } elseif ($orderBy === 'rating') {
+                $movies = $this->movieRepository->findBy([], ['rating' => 'DESC']);
+            }
         }
+
 
 
         $data = $this->serializer->serialize($movies, "json", ["groups" => "default"]);

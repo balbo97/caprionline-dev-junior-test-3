@@ -21,6 +21,23 @@ class MovieRepository extends ServiceEntityRepository
         parent::__construct($registry, Movie::class);
     }
 
+    /**
+     * Trova i film di un genere specifico.
+     *
+     * @param int $genreId L'ID del genere
+     * @return array Array di film associati al genere specifico
+     */
+    public function findMoviesByGenre(int $genreId): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.movieGenres', 'mg')
+            ->andWhere('mg.genre = :genreId')
+            ->setParameter('genreId', $genreId)
+            ->getQuery()
+            ->getResult();
+    }
+
+
     //    /**
     //     * @return Movie[] Returns an array of Movie objects
     //     */
