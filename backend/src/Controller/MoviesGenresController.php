@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class GenresController extends AbstractController
+class MoviesGenresController extends AbstractController
 {
     public function __construct(
         private MovieGenreRepository $movieGenreRepository,
@@ -19,8 +19,8 @@ class GenresController extends AbstractController
     #[Route('/movies_genres', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        // Recupero tutti i generi dal repository
-        $movies_genres = $this->genreRepository->findAll();
+        // Recupero tutte le associazioni film-genere da repository 
+        $movies_genres = $this->movieGenreRepository->findAll();
 
         // Serializzo i dati in formato JSON
         $data = $this->serializer->serialize($movies_genres, 'json');
