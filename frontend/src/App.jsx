@@ -5,10 +5,8 @@ const App = props => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [genres, setGenres] = useState([]);
-
-  // Aggiungi uno stato per il genere selezionato
-  const [selectedGenre, setSelectedGenre] = useState('');
-
+  // Aggiungi uno stato per i generi selezionati
+  const [movieGenres, setMovieGenres] = useState([]);
   // Aggiungi uno stato per il criterio di ordinamento selezionato
   const [orderBy, setOrderBy] = useState(''); // Inizialmente nessun criterio selezionato
 
@@ -29,6 +27,8 @@ const App = props => {
 
   // Funzione per recuperare i generi dal server
   const fetchGenres = () => {
+    setLoading(true);
+
     fetch('http://localhost:8000/genres')
       .then(response => response.json())
       .then(data => {
@@ -39,11 +39,24 @@ const App = props => {
       });
   }
 
+  // Funzione per recuperare i generi dei film dal server
+  const fetchMovieGenres = () => {
+    fetch('http://localhost:8000/movies_genres')
+      .then(response => response.json())
+      .then(data => {
+        setMovieGenres(data);
+      })
+      .catch(error => {
+        console.error('Error fetching movie genres:', error);
+      });
+  }
+
 
   // Effetto per caricare i film e i generi quando cambia il criterio di ordinamento
   useEffect(() => {
     fetchMovies();
     fetchGenres();
+    fetchMovieGenres();
   }, [orderBy]);
 
   // Aggiungi la logica per gestire il cambio del criterio di ordinamento
@@ -61,7 +74,8 @@ const App = props => {
     if (!selectedGenre) {
       return true; // Mostra tutti i film se nessun genere è selezionato
     }
-    return movie.genres.some(genre => genre.id === selectedGenre);
+    // Verifica se il film ha il genere selezionato tra i suoi generi associati
+    return movieGenres.some(movieGenre => movieGenre.movieId === movie.id && movieGenre.genreId === selectedGenre);
   });
 
 
@@ -83,7 +97,7 @@ const App = props => {
         {/* Dropdown per selezionare il genere */}
         <div>
 
-          <select value={selectedGenre} onChange={handleGenreChange}>
+          <select value={movieGenres} onChange={handleGenreChange}>
             <option value="">All Genres</option>
             {genres.map(genre => (
               <option key={genre.id} value={genre.id}>{genre.name}</option>
