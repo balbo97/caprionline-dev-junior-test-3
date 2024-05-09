@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\MovieGenreRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -16,10 +17,19 @@ class MoviesGenresController extends AbstractController
     ) {
     }
 
-    #[Route('/movie_genres', methods: ['GET'])]
-    public function index(): Response
+    #[Route('/movies_genres', methods: ['GET'])]
+    public function index(Request $request): Response
     {
-        $movieGenres = $this->movieGenreRepository->findAll();
+        // Ottieni il parametro di query per il genere selezionato, se presente
+        $selectedGenre = $request->query->get('genre_id');
+
+        // Se è stato specificato un genere, filtra i movieGenres per quel genere
+        if ($selectedGenre) {
+            $movieGenres = $this->movieGenreRepository->findBy(['genre' => $selectedGenre]);
+        } else {
+            // Altrimenti, ottieni tutti i movieGenres
+            $movieGenres = $this->movieGenreRepository->findAll();
+        }
 
         // Costruiamo manualmente un array di dati
         $data = [];
