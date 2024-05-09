@@ -26,18 +26,23 @@ class MoviesController extends AbstractController
         // Recupero il genere dalla query
         $genre = $request->query->get('genre');
 
+        // Ottieni i film senza filtri
+        $movies = $this->movieRepository->findAll();
+
+        // Se è specificato un genere, ottieni i film di quel genere
         if ($genre) {
             $movies = $this->movieRepository->findMoviesByGenre($genre);
-        } else {
-            // Altrimenti, recupero tutti i film
-            $movies = $this->movieRepository->findAll();
+        }
 
-            // Se è specificato un criterio di ordinamento, ordino i film di conseguenza
-            if ($orderBy === 'recent') {
-                $movies = $this->movieRepository->findBy([], ['year' => 'DESC']);
-            } elseif ($orderBy === 'rating') {
-                $movies = $this->movieRepository->findBy([], ['rating' => 'DESC']);
-            }
+        // Ordina i film se specificato un criterio di ordinamento
+        if ($orderBy === 'recent') {
+            usort($movies, function ($a, $b) {
+                return $b->getYear() - $a->getYear(); // Ordina per anno decrescente
+            });
+        } elseif ($orderBy === 'rating') {
+            usort($movies, function ($a, $b) {
+                return $b->getRating() - $a->getRating(); // Ordina per rating decrescente
+            });
         }
 
 
