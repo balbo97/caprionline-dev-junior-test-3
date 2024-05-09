@@ -5,27 +5,37 @@ namespace App\Controller;
 use App\Repository\MovieGenreRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
+
 
 class MoviesGenresController extends AbstractController
 {
     public function __construct(
-        private MovieGenreRepository $movieGenreRepository,
-        private SerializerInterface $serializer
+        private MovieGenreRepository $movieGenreRepository
     ) {
     }
 
-    #[Route('/movies_genres', methods: ['GET'])]
-    public function list(): JsonResponse
+    #[Route('/movie_genres', methods: ['GET'])]
+    public function index(): Response
     {
-        // Recupero tutte le associazioni film-genere da repository 
-        $movies_genres = $this->movieGenreRepository->findAll();
+        $movieGenres = $this->movieGenreRepository->findAll();
 
-        // Serializzo i dati in formato JSON
-        $data = $this->serializer->serialize($movies_genres, 'json');
+        // Costruiamo manualmente un array di dati
+        $data = [];
+        foreach ($movieGenres as $movieGenre) {
+            $data[] = [
+                'id' => $movieGenre->getId(),
+                'movie_id' => $movieGenre->getMovie()->getId(),
+                'genre_id' => $movieGenre->getGenre()->getId(),
 
-        // Restituisco una risposta JSON con l'elenco dei generi
-        return new JsonResponse($data, json: true);
+            ];
+        }
+
+        // Convertiamo l'array in formato JSON
+        $jsonData = json_encode($data);
+
+        // Restituiamo una risposta JSON
+        return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
     }
 }
