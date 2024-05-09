@@ -6,17 +6,23 @@ const App = props => {
   const [loading, setLoading] = useState(true);
   const [genres, setGenres] = useState([]);
 
-
+  // Aggiungiamo lo stato per il genere selezionato
+  const [selectedGenre, setSelectedGenre] = useState('');
   // Aggiungi uno stato per il criterio di ordinamento selezionato
-  const [orderBy, setOrderBy] = useState(''); // Inizialmente nessun criterio selezionato
+  const [orderBy, setOrderBy] = useState('');
 
   // Funzione per recuperare i film dal server 
   const fetchMovies = () => {
     setLoading(true);
 
-    // Aggiungi il parametro di ordinamento alla URL della richiesta
-    const url = `http://localhost:8000/movies${orderBy ? `?orderBy=${orderBy}` : ''}`;
-
+    // Aggiungiamo il parametro di genere alla URL della richiesta
+    let url = 'http://localhost:8000/movies';
+    if (orderBy) {
+      url += `?orderBy=${orderBy}`;
+    }
+    if (selectedGenre) {
+      url += `${orderBy ? '&' : '?'}genre=${selectedGenre}`;
+    }
     return fetch(url) // Utilizza l'URL con il parametro di ordinamento
       .then(response => response.json())
       .then(data => {
@@ -47,7 +53,7 @@ const App = props => {
     fetchMovies();
     fetchGenres();
 
-  }, [orderBy]);
+  }, [orderBy, selectedGenre]);
 
   // Aggiungi la logica per gestire il cambio del criterio di ordinamento
   const handleOrderByChange = (e) => {
@@ -55,7 +61,10 @@ const App = props => {
   };
 
 
-
+  // Aggiungiamo la funzione per gestire il cambio del genere selezionato
+  const handleGenreChange = (e) => {
+    setSelectedGenre(e.target.value);
+  };
 
 
 
@@ -63,14 +72,23 @@ const App = props => {
     <Layout>
       <Heading />
 
-      {/* Aggiungi il dropdown per selezionare il criterio di ordinamento */}
+
       <div className="flex justify-end mb-4">
 
+        {/* Aggiungi il dropdown per selezionare il criterio di ordinamento */}
         <select id="orderBy" className='me-3' value={orderBy} onChange={handleOrderByChange}>
 
           <option className='dropdown-item' value="">Order By</option>
           <option className='dropdown-item' value="recent">Year</option>
           <option className='dropdown-item' value="rating">Rating</option>
+        </select>
+
+        {/* Aggiungiamo un dropdown per selezionare il genere */}
+        <select id="genre" className='me-3' value={selectedGenre} onChange={handleGenreChange}>
+          <option className='dropdown-item' value="">All Genres</option>
+          {genres.map(genre => (
+            <option key={genre.id} value={genre.id}>{genre.name}</option>
+          ))}
         </select>
 
       </div>
